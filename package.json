@@ -1,0 +1,25 @@
+{
+  "name": "ronald",
+  "version": "1.0.0",
+  "main": "robochat.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "botbuilder": "^3.7.0",
+    "restify": "^4.3.0",
+    "mongoose": "*"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeVictor/robochat.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CodeVictor/robochat/issues"
+  },
+  "homepage": "https://github.com/CodeVictor/robochat#readme",
+  "description": ""
+}

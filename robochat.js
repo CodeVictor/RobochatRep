@@ -1,4 +1,4 @@
-﻿const builder = require('botbuilder');
+const builder = require('botbuilder');
 const restify = require('restify');
 const mongoose = require('mongoose');
 
@@ -37,21 +37,30 @@ var infoCursos = new mongoose.Schema({
 
 var Curso = mongoose.model('cursos', infoCursos);
 
+objCalculator = {
+  SumarNumero: function(a, b){
+    return a + b;
+  },
 
+  RestarNumero: function(a, b){
+    return a - b;
+  }
+
+}
 
 // Setup LUIS
 const recognizer = new builder.LuisRecognizer('https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/72fa543d-9617-41a4-ad3c-69216dfe7f77?subscription-key=cdaada34237d4892b96117988297f8c6&timezoneOffset=0&verbose=true&q=');
 const intents = new builder.IntentDialog({ recognizers: [recognizer] });
 
 var nombre;
-var numeroAdivina = Math.floor(Math.random()*(100-1)) + 1;
+var numeroAdivina = Math.floor(Math.random()*(objCalculator.RestarNumero(100, 1))) + 1;
 var numeroAdivinaDos;
 intents.matches('Saludar', [
     function (session) {
         builder.Prompts.text(session, 'Hola ¿Como te llamas?');
     },
     function (session, results) {
-    	nombre = results.response;
+        nombre = results.response;
         session.send('Hola %s!', results.response);
     }
 ]);
@@ -106,21 +115,21 @@ intents.matches('JugarAdivinar', [
               }
     }, 
     function(session, results){
-    	if(results.response == 'Ya, empieza'){
+        if(results.response == 'Ya, empieza'){
               session.beginDialog('/seguirAdivinando');
-    	}else{
-    	var respuesta = parseInt(results.response);
-    			if(respuesta > numeroAdivina){
-    				session.send('No, ese no es, mi numero es menor');
-    				session.beginDialog('/seguirPidiendo');
-    			}else if (respuesta < numeroAdivina){
-    				session.send('No, ese no es, mi numero es mayor');
-    				session.beginDialog('/seguirPidiendo');
-    			}else{
-    				session.send('Has adivinado el numero');
-    			}
-    		}
-    	
+        }else{
+        var respuesta = parseInt(results.response);
+                if(respuesta > numeroAdivina){
+                    session.send('No, ese no es, mi numero es menor');
+                    session.beginDialog('/seguirPidiendo');
+                }else if (respuesta < numeroAdivina){
+                    session.send('No, ese no es, mi numero es mayor');
+                    session.beginDialog('/seguirPidiendo');
+                }else{
+                    session.send('Has adivinado el numero');
+                }
+            }
+        
     }
 
 
@@ -132,37 +141,39 @@ bot.dialog('/seguirPidiendo', [
 
     },
  function(session, results){
- 	if(results.response == 'terminemos'){
+    if(results.response == 'terminemos'){
          session.send('Te cansaste, no eres digno, jajaja');
- 	}else {
-    	var respuesta = parseInt(results.response);
-    			if(respuesta > numeroAdivina){
-    				session.send('No, ese no es, mi numero es menor');
-    				session.beginDialog('/seguirPidiendo');
-    			}else if (respuesta < numeroAdivina){
-    				session.send('No, ese no es, mi numero es mayor');
-    				session.beginDialog('/seguirPidiendo');
-    			}else{
-    				session.send('Has adivinado el numero');
-    				session.endDialog();
-    			}
- 	}
+    }else {
+        var respuesta = parseInt(results.response);
+                if(respuesta > numeroAdivina){
+                    session.send('No, ese no es, mi numero es menor');
+                    session.beginDialog('/seguirPidiendo');
+                }else if (respuesta < numeroAdivina){
+                    session.send('No, ese no es, mi numero es mayor');
+                    session.beginDialog('/seguirPidiendo');
+                }else{
+                    session.send('Has adivinado el numero');
+                    session.endDialog();
+                }
+    }
     }
 ]);
 
 bot.dialog ('/seguirAdivinando', [
   function(session){
-    numeroAdivinaDos = Math.floor(Math.random()*(15-1))+1;
+    numeroAdivinaDos = Math.floor(Math.random()*(objCalculator.RestarNumero(15, 1)))+1;
     builder.Prompts.text(session, numeroAdivinaDos.toString()); 
+
+
   },
   function(session, results){
      if(results.response == 'no, ese no es'){
            session.beginDialog('/seguirAdivinando');
      }else if (results.response == 'adivinaste'){
-     	   session.endDialog();
+           session.endDialog();
      }else if (results.response == 'ya no quiero seguir'){
-     	session.send('Bien');
-     	session.endDialog();
+        session.send('Bien');
+        session.endDialog();
      }
 
   }
@@ -179,30 +190,30 @@ intents.matches('ConsultarTelefono', function(session, args, results){
 
      var persons = datosContacto.findOne({nombre : entitytelefono.entity}, function(err, personita){
          if(err){
-         	return handleError(err);
+            return handleError(err);
          }else if (personita === null){
-         	session.send('No tienes a esa persona en tu agenda');
+            session.send('No tienes a esa persona en tu agenda');
          }else
          {
-         	session.send(personita.telefono.toString());
+            session.send(personita.telefono.toString());
          }
 
      });
 });
 
 intents.matches('ConsultarCatedratico',  function(session, args, results){
-	const entitycatedratico = builder.EntityRecognizer.findEntity(args.entities, 'Cursos');
+    const entitycatedratico = builder.EntityRecognizer.findEntity(args.entities, 'Cursos');
 
      Curso.findOne({Nombre : entitycatedratico.entity.toUpperCase()}, function(err, cursito){
          if(err){
-         	return handleError(err);
+            return handleError(err);
          }else if (cursito === null){
-         	session.send('No tienes a esa persona en tu agenda');
+            session.send('No tienes a esa persona en tu agenda');
          }else
          {
-         	var inicio = 'Ing. ';
-         	var total = inicio.concat(cursito.Catedratico.toUpperCase())
-         	session.send(total);
+            var inicio = 'Ing. ';
+            var total = inicio.concat(cursito.Catedratico.toUpperCase())
+            session.send(total);
          }
 
      });
@@ -213,9 +224,9 @@ intents.matches('ConcultarCurso', function(session, args, results){
 
      Curso.find({Catedratico : obteniendoCurso.entity.toLowerCase()},function(err, todosCursos){
          if(err){
-         	return handleError(err);
+            return handleError(err);
          }else if(todosCursos === null){
-         	session.send('No hay datos, lo siento');
+            session.send('No hay datos, lo siento');
          }else {
 
                  for (i =0; i < todosCursos.length; i++){
